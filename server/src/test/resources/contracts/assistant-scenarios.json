@@ -1,0 +1,328 @@
+{
+  "schemaVersion": 1,
+  "mode": "deterministic-scripted-model",
+  "baseRequest": {
+    "backupId": "00000000-0000-4000-8000-000000000001",
+    "from": "2026-10-01",
+    "to": "2026-10-18",
+    "days": 1,
+    "minutes": 60,
+    "allowedExerciseIds": [
+      "squat"
+    ],
+    "consent": true
+  },
+  "catalog": [
+    {
+      "id": "squat",
+      "name": "深蹲",
+      "bodyPart": "腿"
+    },
+    {
+      "id": "row",
+      "name": "划船",
+      "bodyPart": "背"
+    }
+  ],
+  "cases": [
+    {
+      "id": "A01",
+      "title": "三天训练计划",
+      "category": "normal",
+      "requestPatch": {
+        "days": 3
+      },
+      "expectedCode": "SUCCESS",
+      "expectedModelCalls": 2
+    },
+    {
+      "id": "A02",
+      "title": "十五分钟单日限制",
+      "category": "normal",
+      "requestPatch": {
+        "minutes": 15
+      },
+      "expectedCode": "SUCCESS",
+      "expectedModelCalls": 2
+    },
+    {
+      "id": "A03",
+      "title": "七天训练计划",
+      "category": "normal",
+      "requestPatch": {
+        "days": 7
+      },
+      "expectedCode": "SUCCESS",
+      "expectedModelCalls": 2
+    },
+    {
+      "id": "A04",
+      "title": "空历史保留缺失范围",
+      "category": "missing-data",
+      "history": "empty",
+      "expectedCode": "SUCCESS",
+      "expectedModelCalls": 2
+    },
+    {
+      "id": "A05",
+      "title": "前一期间无记录不伪造比较值",
+      "category": "missing-data",
+      "history": "recent-only",
+      "expectedCode": "SUCCESS",
+      "expectedModelCalls": 2
+    },
+    {
+      "id": "A06",
+      "title": "动作名称注入不能增加权限",
+      "category": "injection",
+      "hostileName": true,
+      "expectedCode": "SUCCESS",
+      "expectedModelCalls": 2
+    },
+    {
+      "id": "A07",
+      "title": "开始日期缺失",
+      "category": "request",
+      "requestPatch": {
+        "from": null
+      },
+      "expectedCode": "INVALID_COACH_REQUEST",
+      "expectedModelCalls": 0
+    },
+    {
+      "id": "A08",
+      "title": "日期逆序",
+      "category": "request",
+      "requestPatch": {
+        "from": "2026-10-19"
+      },
+      "expectedCode": "INVALID_COACH_REQUEST",
+      "expectedModelCalls": 0
+    },
+    {
+      "id": "A09",
+      "title": "日期跨度超过九十天",
+      "category": "request",
+      "requestPatch": {
+        "from": "2026-01-01"
+      },
+      "expectedCode": "INVALID_COACH_REQUEST",
+      "expectedModelCalls": 0
+    },
+    {
+      "id": "A10",
+      "title": "零训练天数",
+      "category": "request",
+      "requestPatch": {
+        "days": 0
+      },
+      "expectedCode": "INVALID_COACH_REQUEST",
+      "expectedModelCalls": 0
+    },
+    {
+      "id": "A11",
+      "title": "时长低于十五分钟",
+      "category": "request",
+      "requestPatch": {
+        "minutes": 14
+      },
+      "expectedCode": "INVALID_COACH_REQUEST",
+      "expectedModelCalls": 0
+    },
+    {
+      "id": "A12",
+      "title": "未同意数据发送",
+      "category": "request",
+      "requestPatch": {
+        "consent": false
+      },
+      "expectedCode": "INVALID_COACH_REQUEST",
+      "expectedModelCalls": 0
+    },
+    {
+      "id": "A13",
+      "title": "未选择允许动作",
+      "category": "request",
+      "requestPatch": {
+        "allowedExerciseIds": []
+      },
+      "expectedCode": "INVALID_COACH_REQUEST",
+      "expectedModelCalls": 0
+    },
+    {
+      "id": "A14",
+      "title": "允许动作重复",
+      "category": "request",
+      "requestPatch": {
+        "allowedExerciseIds": [
+          "squat",
+          "squat"
+        ]
+      },
+      "expectedCode": "INVALID_COACH_REQUEST",
+      "expectedModelCalls": 0
+    },
+    {
+      "id": "A15",
+      "title": "模型虚构动作",
+      "category": "plan",
+      "invalidPlan": {
+        "exerciseId": "invented"
+      },
+      "expectedCode": "INVALID_PLAN",
+      "expectedModelCalls": 3
+    },
+    {
+      "id": "A16",
+      "title": "已有但未允许的动作",
+      "category": "plan",
+      "invalidPlan": {
+        "exerciseId": "row"
+      },
+      "expectedCode": "INVALID_PLAN",
+      "expectedModelCalls": 3
+    },
+    {
+      "id": "A17",
+      "title": "同一天重复动作",
+      "category": "plan",
+      "mutation": "duplicate-item",
+      "expectedCode": "INVALID_PLAN",
+      "expectedModelCalls": 3
+    },
+    {
+      "id": "A18",
+      "title": "计划天数不匹配",
+      "category": "plan",
+      "mutation": "wrong-days",
+      "expectedCode": "INVALID_PLAN",
+      "expectedModelCalls": 3
+    },
+    {
+      "id": "A19",
+      "title": "组数超过上限",
+      "category": "plan",
+      "invalidPlan": {
+        "sets": 7
+      },
+      "expectedCode": "INVALID_PLAN",
+      "expectedModelCalls": 3
+    },
+    {
+      "id": "A20",
+      "title": "组数不是整数",
+      "category": "plan",
+      "invalidPlan": {
+        "sets": 1.5
+      },
+      "expectedCode": "INVALID_PLAN",
+      "expectedModelCalls": 3
+    },
+    {
+      "id": "A21",
+      "title": "次数为零",
+      "category": "plan",
+      "invalidPlan": {
+        "reps": 0
+      },
+      "expectedCode": "INVALID_PLAN",
+      "expectedModelCalls": 3
+    },
+    {
+      "id": "A22",
+      "title": "间歇超过上限",
+      "category": "plan",
+      "invalidPlan": {
+        "restSeconds": 301
+      },
+      "expectedCode": "INVALID_PLAN",
+      "expectedModelCalls": 3
+    },
+    {
+      "id": "A23",
+      "title": "额外写入指令字段",
+      "category": "plan",
+      "mutation": "extra-write-field",
+      "expectedCode": "INVALID_PLAN",
+      "expectedModelCalls": 3
+    },
+    {
+      "id": "A24",
+      "title": "估算时长超限",
+      "category": "plan",
+      "requestPatch": {
+        "minutes": 15
+      },
+      "invalidPlan": {
+        "sets": 6,
+        "restSeconds": 300
+      },
+      "expectedCode": "PLAN_DURATION_EXCEEDED",
+      "expectedModelCalls": 3
+    },
+    {
+      "id": "A25",
+      "title": "工具注入另一用户",
+      "category": "injection",
+      "tool": {
+        "name": "compareTrainingPeriods",
+        "arguments": {
+          "userId": "victim"
+        }
+      },
+      "expectedCode": "INVALID_PLAN",
+      "expectedModelCalls": 1
+    },
+    {
+      "id": "A26",
+      "title": "请求模型发布工具",
+      "category": "injection",
+      "tool": {
+        "name": "publish",
+        "arguments": {}
+      },
+      "expectedCode": "UNKNOWN_TOOL",
+      "expectedModelCalls": 1
+    },
+    {
+      "id": "A27",
+      "title": "趋势工具请求未允许动作",
+      "category": "injection",
+      "tool": {
+        "name": "getExerciseProgress",
+        "arguments": {
+          "exerciseId": "row"
+        }
+      },
+      "expectedCode": "INVALID_TOOL_ARGUMENTS",
+      "expectedModelCalls": 1
+    },
+    {
+      "id": "A28",
+      "title": "模型超时不自动重试",
+      "category": "failure",
+      "failure": "MODEL_UNAVAILABLE",
+      "expectedCode": "MODEL_UNAVAILABLE",
+      "expectedModelCalls": 1
+    },
+    {
+      "id": "A29",
+      "title": "无效输出只修复一次后成功",
+      "category": "repair",
+      "invalidPlan": {
+        "exerciseId": "invented"
+      },
+      "repairValid": true,
+      "expectedCode": "SUCCESS",
+      "expectedModelCalls": 3
+    },
+    {
+      "id": "A30",
+      "title": "单轮九工具超过预算",
+      "category": "budget",
+      "toolBatch": 9,
+      "expectedCode": "AGENT_TOOL_BUDGET",
+      "expectedModelCalls": 1
+    }
+  ]
+}

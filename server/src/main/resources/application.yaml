@@ -1,0 +1,74 @@
+spring:
+  application:
+    name: workout-server
+  datasource:
+    url: ${WORKOUT_DB_URL}
+    username: ${WORKOUT_DB_USER}
+    password: ${WORKOUT_DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 8
+      connection-timeout: 5000
+      data-source-properties:
+        connectTimeout: 5
+        socketTimeout: 10
+  flyway:
+    clean-disabled: true
+    baseline-on-migrate: false
+  session:
+    timeout: 30m
+    jdbc:
+      initialize-schema: never
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 21MB
+      file-size-threshold: 0
+server:
+  port: 8080
+  error:
+    include-message: never
+    include-stacktrace: never
+  servlet:
+    session:
+      cookie:
+        http-only: true
+        same-site: lax
+        secure: ${WORKOUT_COOKIE_SECURE:false}
+  tomcat:
+    max-part-count: 4
+    max-http-form-post-size: 4KB
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+      group:
+        readiness:
+          include: readinessState,db
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true
+workout:
+  training-write-enabled: ${WORKOUT_TRAINING_WRITE_ENABLED:false}
+  registration-enabled: ${WORKOUT_REGISTRATION_ENABLED:false}
+  max-users: ${WORKOUT_MAX_USERS:10}
+  assistant:
+    api-key: ${WORKOUT_DEEPSEEK_API_KEY:}
+    model: ${WORKOUT_DEEPSEEK_MODEL:}
+  backup:
+    max-versions: 20
+    max-total-bytes: 209715200
+  jobs:
+    enabled: ${WORKOUT_JOBS_ENABLED:true}
+    lease-seconds: 30
+    deadline-seconds: 120
+    poll-ms: 500
+logging:
+  structured:
+    format:
+      console: logstash

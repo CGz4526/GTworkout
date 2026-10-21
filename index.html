@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- iOS「添加到主屏幕」不读 web manifest，只认 apple-touch-icon。
+         没有它时 Safari 用页面标题首字符（「健」）兜底当图标。 -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="健身记录" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#f5f7fc" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>健身记录</title>
+    <script>
+      ;(function () {
+        var t = localStorage.getItem('theme')
+        var dark = t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches)
+        if (dark) {
+          document.documentElement.classList.add('dark')
+        }
+        // theme-color 必须跟着主题走：写死一个值的话，浏览器状态栏/工具栏的底色
+        // 总会和当前页面差一档。取值与 --color-surface-0 保持一致。
+        // 内联在这里是为了在首次绘制前就定好，避免闪一下再变色。
+        var meta = document.querySelector('meta[name="theme-color"]')
+        if (meta) meta.setAttribute('content', dark ? '#101725' : '#f5f7fc')
+      })()
+      // 深链回退：这段只在由 GitHub Pages 的 404.html 跳转过来（URL 形如 /?/history）时
+      // 才有作用。当前部署目标是 Cloudflare Pages（走 SPA 回退），仓库里**没有**
+      // public/404.html，所以这段是空转的。保留是为了将来切回 GH Pages 时不必重写；
+      // 若确认不再回 GH Pages，可连同它一起删掉。
+      ;(function () {
+        var l = window.location
+        if (l.search[1] === '/') {
+          var decoded = l.search
+            .slice(1)
+            .split('&')
+            .map(function (s) {
+              return s.replace(/~and~/g, '&')
+            })
+            .join('?')
+          window.history.replaceState(null, '', l.pathname.slice(0, -1) + decoded + l.hash)
+        }
+      })()
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

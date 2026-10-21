@@ -1,0 +1,105 @@
+name: workout-prod
+
+x-logging: &bounded-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  web:
+    image: ${WORKOUT_WEB_IMAGE:?Select an approved release image}
+    pull_policy: never
+    environment:
+      WORKOUT_DOMAIN: ${WORKOUT_DOMAIN:?Set the real HTTPS hostname}
+      NGINX_ENVSUBST_FILTER: ^WORKOUT_DOMAIN$
+    ports:
+      - "${WORKOUT_BIND_ADDRESS:-127.0.0.1}:${WORKOUT_HTTP_PORT:-8088}:80"
+      - "${WORKOUT_BIND_ADDRESS:-127.0.0.1}:${WORKOUT_HTTPS_PORT:-8443}:443"
+    volumes:
+      - type: bind
+        source: ./nginx/server.conf.template
+        target: /etc/nginx/templates/default.conf.template
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${WORKOUT_TLS_DIR:?Set the protected server TLS directory}
+        target: /etc/workout/tls
+        read_only: true
+        bind:
+          create_host_path: false
+    read_only: true
+    tmpfs:
+      - /etc/nginx/conf.d:rw,size=1048576
+      - /var/cache/nginx:rw,size=67108864
+      - /var/run:rw,size=1048576
+      - /tmp:rw,size=8388608
+    restart: unless-stopped
+    mem_limit: 128m
+    logging: *bounded-logging
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/healthz"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
+    labels:
+      io.github.cgz4526.workout.environment: production
+
+  server:
+    image: ${WORKOUT_SERVER_IMAGE:?Select an approved release image}
+    pull_policy: never
+    environment:
+      WORKOUT_DB_URL: jdbc:postgresql://db:5432/workout
+      WORKOUT_DB_USER: workout
+      WORKOUT_DB_PASSWORD: ${WORKOUT_DB_PASSWORD:?Inject the reviewed database credential at runtime}
+      WORKOUT_TRAINING_WRITE_ENABLED: ${WORKOUT_TRAINING_WRITE_ENABLED:-false}
+      WORKOUT_REGISTRATION_ENABLED: ${WORKOUT_REGISTRATION_ENABLED:-false}
+      WORKOUT_COOKIE_SECURE: "true"
+      WORKOUT_DEEPSEEK_API_KEY: ${WORKOUT_DEEPSEEK_API_KEY:-}
+      WORKOUT_DEEPSEEK_MODEL: ${WORKOUT_DEEPSEEK_MODEL:-}
+      SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: "5"
+    networks: [default, database]
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    mem_limit: 768m
+    logging: *bounded-logging
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8080/actuator/health/readiness"]
+      interval: 15s
+      timeout: 3s
+      start_period: 40s
+      retries: 5
+    labels:
+      io.github.cgz4526.workout.environment: production
+
+  db:
+    image: ${WORKOUT_DB_IMAGE:?Select the reviewed PostgreSQL image}
+    pull_policy: never
+    environment:
+      POSTGRES_DB: workout
+      POSTGRES_USER: workout
+      POSTGRES_PASSWORD: ${WORKOUT_DB_PASSWORD:?Inject the reviewed database credential at runtime}
+    command: [postgres, -c, shared_buffers=128MB, -c, max_connections=30]
+    networks: [database]
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    mem_limit: 512m
+    logging: *bounded-logging
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U workout -d workout"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    labels:
+      io.github.cgz4526.workout.environment: production
+
+networks:
+  database:
+    internal: true
+
+volumes:
+  postgres_data:
