@@ -1,5 +1,7 @@
 # 工程进度
 
+独立仓库上传完成（2026-10-21）：用户完成GitHub登录后，已创建公开仓库[CGz4526/GTworkout](https://github.com/CGz4526/GTworkout)并首次推送main；旧workout仓库保持不动。GitHub API核验公开状态和初始提交成功；不涉及运行数据、数据库或网站发布。见[本批说明](delivery/2026-10-21-02-github-upload.md)。
+
 独立仓库准备（2026-10-21）：按用户要求为CGz4526/GTworkout初始化main并整理完整工程，原workout远端不操作；源码与部署文档纳入显式清单，运行数据及依赖排除，凭据模式扫描无命中。当前等待用户完成GitHub CLI登录，尚未创建远端或推送；见[本批说明](delivery/2026-10-21-01-github-repository-preparation.md)。
 
 近期模拟演示（2026-10-19）：独立5209入口已载入24条近六周合成训练、30条体重及3个演示模板，周天数3/4/2/5/4/1，原5197数据未操作。实际预览修正纯力量/有氧周漏柱顶数字的问题；build/lint、双时区契约、夹具统计及浏览器显示检查通过。见[本批说明](delivery/2026-10-19-05-recent-demo-data.md)。
