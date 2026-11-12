@@ -4,6 +4,14 @@
 
 React PWA 保留本地训练体验，Java 后端提供独立的云账号和不可变备份。断网或未登录时仍可记录训练；云端不自动认领、上传或覆盖当前浏览器数据。
 
+## 实际运行截图
+
+下图截自线上站点登录后的模板页。每张模板卡片展示动作、工作组和热身组。
+
+![GTworkout 训练模板页](docs/verification/training-templates.png)
+
+[打开 GTworkout](https://gtworkout.top/)
+
 ## 当前可用
 
 - 原有力量/有氧训练、模板、体重、历史和 JSON 导入导出。
